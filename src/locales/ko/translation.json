@@ -1,4 +1,9 @@
 {
+  "common": {
+    "cancel": "취소",
+    "save": "저장",
+    "loading": "로딩 중..."
+  },
   "sidebar": {
     "inbox": "받은편지함",
     "workflows": "워크플로우",
@@ -9,16 +14,93 @@
   },
   "inbox": {
     "title": "받은편지함",
-    "search": "검색..."
+    "search": "검색...",
+    "sync": "이메일 동기화"
+  },
+  "thread": {
+    "no_subject": "제목 없음",
+    "no_content": "내용 없음",
+    "mock": {
+      "subject": "NexusMail에 오신 것을 환영합니다 (브라우저 모드)",
+      "snippet": "브라우저에서 실행 중이므로 모의 스레드입니다."
+    }
+  },
+  "chat": {
+    "reply_placeholder": "답장...",
+    "mock": {
+      "incoming": "안녕하세요, 지난달 서비스 청구서를 첨부했습니다. 질문이 있으시면 알려주세요.",
+      "outgoing": "받았습니다, 감사합니다! 바로 처리하겠습니다."
+    }
   },
   "workflow": {
     "title": "자동화 워크플로우",
+    "subtitle": "자동화 규칙 관리",
     "create": "새 워크플로우",
+    "back": "워크플로우로 돌아가기",
+    "stats": "{{triggers}} 트리거 · {{actions}} 작업",
+    "editor": {
+      "title": "송장 자동화",
+      "desc": "새 이메일에 '송장'이 포함될 때 실행"
+    },
     "save": "저장",
-    "activate": "활성화"
+    "activate": "활성화",
+    "save_success": "워크플로우가 저장되었습니다!",
+    "save_simulated": "워크플로우가 저장되었습니다 (시뮬레이션)!",
+    "save_error": "워크플로우 저장 실패."
   },
   "settings": {
     "title": "설정",
-    "language": "언어"
+    "loading": "설정 로딩 중...",
+    "appearance": "모양",
+    "language": "언어",
+    "theme": {
+      "light": "라이트",
+      "dark": "다크",
+      "system": "시스템"
+    },
+    "accounts": {
+      "title": "연결된 계정",
+      "add": "계정 추가",
+      "new_details": "새 계정 세부 정보",
+      "email_placeholder": "이메일 주소",
+      "password_placeholder": "비밀번호 / 앱 비밀번호",
+      "server_placeholder": "IMAP 서버 (예: imap.gmail.com)",
+      "port_placeholder": "포트 (993)",
+      "save": "계정 저장",
+      "delete_confirm": "이 계정을 삭제하시겠습니까?",
+      "browser_mode": "브라우저 모드에서는 계정을 추가할 수 없습니다.",
+      "add_error": "계정 추가 실패",
+      "no_accounts": "연결된 계정이 없습니다."
+    },
+    "sync": {
+      "title": "동기화 상태",
+      "pause": "일시 중지",
+      "sync_now": "지금 동기화",
+      "syncing": "동기화 중...",
+      "last_synced": "마지막 동기화: 방금",
+      "channels": "채널",
+      "active": "활성"
+    },
+    "intelligence": {
+      "provider": "LLM 제공업체",
+      "providers": {
+        "ollama": "Ollama (로컬)",
+        "openai": "OpenAI",
+        "anthropic": "Anthropic"
+      },
+      "model": "모델 이름",
+      "api_key": "API 키",
+      "secure_storage": "시스템 키체인에 안전하게 저장됩니다."
+    },
+    "security": {
+      "db_encryption": "데이터베이스 암호화",
+      "desc": "로컬 데이터베이스는 마스터 키로 암호화됩니다. 주기적으로 이 키를 변경할 수 있습니다.",
+      "new_pw_placeholder": "새 마스터 비밀번호",
+      "change_key": "키 변경",
+      "processing": "처리 중... 시간이 걸릴 수 있습니다.",
+      "success": "성공! 데이터베이스가 다시 암호화되었습니다.",
+      "simulated": "성공 (시뮬레이션/브라우저 모드)",
+      "error": "비밀번호 변경 실패."
+    }
   }
 }

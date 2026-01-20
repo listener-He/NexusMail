@@ -1,6 +1,9 @@
 import { Paperclip, Send as SendIcon, MoreHorizontal } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export const ChatView = () => {
+  const { t } = useTranslation();
+
   return (
     <div className="flex-1 h-full flex flex-col bg-slate-950 relative overflow-hidden">
         {/* Background Gradient Blob */}
@@ -25,7 +28,7 @@ export const ChatView = () => {
                 <div className="space-y-2">
                     <div className="bg-white/10 p-4 rounded-2xl rounded-tl-none backdrop-blur-sm border border-white/5">
                         <p className="text-gray-200 leading-relaxed">
-                            Hi there, please find attached the invoice for the last month services. Let me know if you have any questions.
+                            {t('chat.mock.incoming', "Hi there, please find attached the invoice for the last month services. Let me know if you have any questions.")}
                         </p>
                     </div>
                     {/* Attachment Card */}
@@ -46,7 +49,7 @@ export const ChatView = () => {
                 <div className="w-10 h-10 rounded-full bg-lumina-primary flex-shrink-0" />
                 <div className="bg-lumina-active p-4 rounded-2xl rounded-tr-none shadow-lg shadow-blue-500/10">
                     <p className="text-white leading-relaxed">
-                        Received, thanks! I'll process this right away.
+                        {t('chat.mock.outgoing', "Received, thanks! I'll process this right away.")}
                     </p>
                 </div>
             </div>
@@ -59,7 +62,7 @@ export const ChatView = () => {
                     <Paperclip size={20} />
                 </button>
                 <textarea 
-                    placeholder="Reply..." 
+                    placeholder={t('chat.reply_placeholder', "Reply...")} 
                     className="flex-1 bg-transparent border-none focus:ring-0 text-white placeholder-gray-500 resize-none py-3 max-h-32"
                     rows={1}
                 />

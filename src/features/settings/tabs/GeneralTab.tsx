@@ -5,7 +5,9 @@ import { useTranslation } from 'react-i18next';
 interface AppConfig {
     language: string;
     theme: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     llm: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     search: any;
     first_run: boolean;
 }
@@ -13,27 +15,6 @@ interface AppConfig {
 export const GeneralTab = () => {
     const { i18n } = useTranslation();
     const [config, setConfig] = useState<AppConfig | null>(null);
-
-    useEffect(() => {
-        // Load config from backend
-        if (typeof window !== 'undefined' && '__TAURI__' in window) {
-            invoke<AppConfig>('get_config').then(cfg => {
-                setConfig(cfg);
-                // Apply loaded settings
-                i18n.changeLanguage(cfg.language);
-                applyTheme(cfg.theme);
-            }).catch(console.error);
-        } else {
-             // Mock config for browser
-             setConfig({
-                 language: 'en',
-                 theme: 'system',
-                 llm: {},
-                 search: {},
-                 first_run: false
-             });
-        }
-    }, [i18n]);
 
     const applyTheme = (theme: string) => {
         if (theme === 'dark') {
@@ -45,6 +26,34 @@ export const GeneralTab = () => {
              document.documentElement.classList.add('dark'); // Default to dark for Lumina
         }
     };
+
+    useEffect(() => {
+        const loadConfig = async () => {
+            if (typeof window !== 'undefined' && '__TAURI__' in window) {
+                try {
+                    const cfg = await invoke<AppConfig>('get_config');
+                    setConfig(cfg);
+                    // Apply loaded settings
+                    if (cfg.language) {
+                        i18n.changeLanguage(cfg.language);
+                    }
+                    applyTheme(cfg.theme);
+                } catch (error) {
+                    console.error("Failed to load config:", error);
+                }
+            } else {
+                 // Mock config for browser
+                 setConfig({
+                     language: 'en',
+                     theme: 'system',
+                     llm: {},
+                     search: {},
+                     first_run: false
+                 });
+            }
+        };
+        loadConfig();
+    }, []); // Run only once on mount
 
     const updateConfig = async (newConfig: Partial<AppConfig>) => {
         if (!config) return;
@@ -64,12 +73,12 @@ export const GeneralTab = () => {
         }
     };
 
-    if (!config) return <div className="text-gray-400">Loading settings...</div>;
+    if (!config) return <div className="text-gray-400">{i18n.t('settings.loading', 'Loading settings...')}</div>;
 
     return (
         <div className="space-y-6">
             <div className="space-y-2">
-                <h3 className="text-lg font-medium text-white">Appearance</h3>
+                <h3 className="text-lg font-medium text-white">{i18n.t('settings.appearance', 'Appearance')}</h3>
                 <div className="grid grid-cols-3 gap-4 max-w-md">
                     {['light', 'dark', 'system'].map(theme => (
                         <button 
@@ -81,13 +90,13 @@ export const GeneralTab = () => {
                                 : 'bg-white/5 border-white/10 hover:bg-white/10 text-gray-400'
                             }`}
                         >
-                            {theme}
+                            {i18n.t(`settings.theme.${theme}`, theme)}
                         </button>
                     ))}
                 </div>
             </div>
             <div className="space-y-2">
-                <h3 className="text-lg font-medium text-white">Language</h3>
+                <h3 className="text-lg font-medium text-white">{i18n.t('settings.language', 'Language')}</h3>
                 <select 
                     value={config.language}
                     onChange={(e) => updateConfig({ language: e.target.value })}

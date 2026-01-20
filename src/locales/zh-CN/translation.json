@@ -1,4 +1,9 @@
 {
+  "common": {
+    "cancel": "取消",
+    "save": "保存",
+    "loading": "加载中..."
+  },
   "sidebar": {
     "inbox": "收件箱",
     "workflows": "工作流",
@@ -9,16 +14,93 @@
   },
   "inbox": {
     "title": "收件箱",
-    "search": "搜索..."
+    "search": "搜索...",
+    "sync": "同步邮件"
+  },
+  "thread": {
+    "no_subject": "无主题",
+    "no_content": "无内容",
+    "mock": {
+      "subject": "欢迎使用 NexusMail (浏览器模式)",
+      "snippet": "这是一条模拟会话，因为您正在浏览器中运行。"
+    }
+  },
+  "chat": {
+    "reply_placeholder": "回复...",
+    "mock": {
+      "incoming": "您好，请查收上个月的服务发票。如有任何问题，请告诉我。",
+      "outgoing": "收到，谢谢！我会立即处理。"
+    }
   },
   "workflow": {
     "title": "自动化工作流",
+    "subtitle": "管理您的自动化规则",
     "create": "新建工作流",
+    "back": "返回工作流",
+    "stats": "{{triggers}} 个触发器 · {{actions}} 个动作",
+    "editor": {
+      "title": "发票自动化",
+      "desc": "当新邮件包含“发票”时运行"
+    },
     "save": "保存",
-    "activate": "激活"
+    "activate": "激活",
+    "save_success": "工作流保存成功！",
+    "save_simulated": "工作流已保存（模拟）！",
+    "save_error": "保存工作流失败。"
   },
   "settings": {
     "title": "设置",
-    "language": "语言"
+    "loading": "正在加载设置...",
+    "appearance": "外观",
+    "language": "语言",
+    "theme": {
+      "light": "浅色",
+      "dark": "深色",
+      "system": "系统"
+    },
+    "accounts": {
+      "title": "已连接账户",
+      "add": "添加账户",
+      "new_details": "新账户详情",
+      "email_placeholder": "邮箱地址",
+      "password_placeholder": "密码 / 应用专用密码",
+      "server_placeholder": "IMAP 服务器 (例如 imap.gmail.com)",
+      "port_placeholder": "端口 (993)",
+      "save": "保存账户",
+      "delete_confirm": "您确定要删除此账户吗？",
+      "browser_mode": "无法在浏览器模式下添加账户。",
+      "add_error": "添加账户失败",
+      "no_accounts": "暂无连接的账户。"
+    },
+    "sync": {
+      "title": "同步状态",
+      "pause": "暂停",
+      "sync_now": "立即同步",
+      "syncing": "同步中...",
+      "last_synced": "上次同步：刚刚",
+      "channels": "渠道",
+      "active": "活跃"
+    },
+    "intelligence": {
+      "provider": "LLM 提供商",
+      "providers": {
+        "ollama": "Ollama (本地)",
+        "openai": "OpenAI",
+        "anthropic": "Anthropic"
+      },
+      "model": "模型名称",
+      "api_key": "API 密钥",
+      "secure_storage": "安全存储在系统钥匙串中。"
+    },
+    "security": {
+      "db_encryption": "数据库加密",
+      "desc": "您的本地数据库已使用主密钥加密。您可以定期轮换此密钥。",
+      "new_pw_placeholder": "新主密码",
+      "change_key": "更改密钥",
+      "processing": "处理中... 这可能需要一些时间。",
+      "success": "成功！数据库已重新加密。",
+      "simulated": "模拟成功（浏览器模式）",
+      "error": "更改密码失败。"
+    }
   }
 }

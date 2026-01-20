@@ -3,7 +3,7 @@ use std::path::Path;
 use tokio::sync::Mutex;
 use uuid::Uuid;
 use chrono::Utc;
-use crate::database::models::{Thread, Message, Participant};
+use crate::database::models::{Thread, Message, Participant, Account};
 
 pub mod models;
 
@@ -50,8 +50,8 @@ impl Database {
                 id TEXT PRIMARY KEY,
                 email TEXT NOT NULL UNIQUE,
                 provider TEXT NOT NULL,
-                credentials TEXT,
-                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                credentials_json TEXT
             )",
             [],
         )?;
@@ -131,6 +131,53 @@ impl Database {
         conn.execute("CREATE INDEX IF NOT EXISTS idx_messages_thread ON messages(thread_id)", [])?;
         conn.execute("CREATE INDEX IF NOT EXISTS idx_attachments_hash ON attachments(hash)", [])?;
 
+        Ok(())
+    }
+
+    // --- Account Methods / 账户方法 ---
+
+    /// Create a new account with encrypted credentials.
+    /// 创建带有加密凭据的新帐户。
+    pub async fn create_account(&self, email: &str, provider: &str, credentials_json: &str) -> Result<String> {
+        let conn = self.conn.lock().await;
+        let id = Uuid::new_v4().to_string();
+        let now = Utc::now();
+
+        conn.execute(
+            "INSERT INTO accounts (id, email, provider, created_at, credentials_json) VALUES (?1, ?2, ?3, ?4, ?5)",
+            params![id, email, provider, now, credentials_json],
+        )?;
+        Ok(id)
+    }
+
+    /// Get all accounts.
+    /// 获取所有帐户。
+    pub async fn get_accounts(&self) -> Result<Vec<Account>> {
+        let conn = self.conn.lock().await;
+        let mut stmt = conn.prepare("SELECT id, email, provider, created_at, credentials_json FROM accounts")?;
+        
+        let account_iter = stmt.query_map([], |row| {
+            Ok(Account {
+                id: row.get(0)?,
+                email: row.get(1)?,
+                provider: row.get(2)?,
+                created_at: row.get(3)?,
+                credentials_json: row.get(4)?,
+            })
+        })?;
+
+        let mut accounts = Vec::new();
+        for account in account_iter {
+            accounts.push(account?);
+        }
+        Ok(accounts)
+    }
+
+    /// Delete an account.
+    /// 删除帐户。
+    pub async fn delete_account(&self, id: &str) -> Result<()> {
+        let conn = self.conn.lock().await;
+        conn.execute("DELETE FROM accounts WHERE id = ?1", params![id])?;
         Ok(())
     }
 

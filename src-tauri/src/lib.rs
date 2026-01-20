@@ -9,7 +9,7 @@ use crate::engine::Engine;
 use crate::engine::models::Workflow;
 use crate::engine::ingestion::IngestionService;
 use crate::engine::search::SearchService;
-use crate::database::models::Thread;
+use crate::database::models::{Thread, Account};
 
 use tauri::{Manager, State};
 use std::sync::Arc;
@@ -28,6 +28,34 @@ async fn get_config(state: State<'_, Arc<ConfigManager>>) -> Result<AppConfig, S
 #[tauri::command]
 async fn save_config(state: State<'_, Arc<ConfigManager>>, config: AppConfig) -> Result<(), String> {
     state.update_config(|c| *c = config).map_err(|e| e.to_string())
+}
+
+// --- Account Management Commands / 账户管理命令 ---
+
+#[tauri::command]
+async fn get_accounts(state: State<'_, Arc<Database>>) -> Result<Vec<Account>, String> {
+    state.get_accounts().await.map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+async fn create_account(
+    state: State<'_, Arc<Database>>, 
+    email: String, 
+    provider: String, 
+    credentials: String
+) -> Result<String, String> {
+    // Verify connection first
+    IngestionService::verify_connection(&email, &provider, &credentials)
+        .await
+        .map_err(|e| format!("Connection failed: {}", e))?;
+
+    // If successful, save to DB
+    state.create_account(&email, &provider, &credentials).await.map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+async fn delete_account(state: State<'_, Arc<Database>>, id: String) -> Result<(), String> {
+    state.delete_account(&id).await.map_err(|e| e.to_string())
 }
 
 /// Retrieve all active workflows.
@@ -51,7 +79,18 @@ async fn save_workflow(state: State<'_, Arc<Engine>>, yaml: String) -> Result<()
 #[tauri::command]
 async fn sync_account(state: State<'_, Arc<Database>>, engine: State<'_, Arc<Engine>>, search: State<'_, Arc<SearchService>>, email: String, password: String, server: String) -> Result<(), String> {
     let ingestion = IngestionService::new(state.inner().clone(), engine.inner().clone(), search.inner().clone());
-    ingestion.sync_account(&email, &password, &server).await.map_err(|e| e.to_string())
+    // Fallback legacy sync for POC components
+    ingestion.sync_account(&crate::database::models::Account {
+        id: "legacy".to_string(),
+        email: email.clone(),
+        provider: "legacy".to_string(),
+        created_at: chrono::Utc::now(),
+        credentials_json: Some(serde_json::json!({
+            "server": server,
+            "port": "993",
+            "password": password
+        }).to_string())
+    }).await.map_err(|e| e.to_string())
 }
 
 /// Search for emails using the full-text search engine.
@@ -69,6 +108,11 @@ async fn get_threads(state: State<'_, Arc<Database>>) -> Result<Vec<Thread>, Str
 }
 
 // --- Application Entry Point / 应用程序入口点 ---
+
+#[tauri::command]
+async fn change_master_password(state: State<'_, Arc<Database>>, new_key: String) -> Result<(), String> {
+    state.change_password(&new_key).await.map_err(|e| e.to_string())
+}
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -131,13 +175,39 @@ pub fn run() {
 
       // 5. Manage State / 管理状态
       app.manage(config_manager);
-      app.manage(db_arc);
-      app.manage(engine);
-      app.manage(search);
+      app.manage(db_arc.clone());
+      app.manage(engine.clone());
+      app.manage(search.clone());
+
+      // Start Background Sync Loop
+      let sync_db = db_arc.clone();
+      let sync_engine = engine.clone();
+      let sync_search = search.clone();
+      
+      tauri::async_runtime::spawn(async move {
+          let ingestion = IngestionService::new(sync_db.clone(), sync_engine, sync_search);
+          loop {
+              tokio::time::sleep(tokio::time::Duration::from_secs(300)).await; // Sync every 5 minutes
+              log::info!("Starting scheduled sync...");
+              
+              if let Ok(accounts) = sync_db.get_accounts().await {
+                  for account in accounts {
+                      if let Err(e) = ingestion.sync_account(&account).await {
+                          log::error!("Failed to sync account {}: {}", account.email, e);
+                      }
+                  }
+              }
+          }
+      });
 
       Ok(())
     })
-    .invoke_handler(tauri::generate_handler![get_config, save_config, get_threads, get_workflows, save_workflow, sync_account, search_emails])
+    .invoke_handler(tauri::generate_handler![
+        get_config, save_config, 
+        get_accounts, create_account, delete_account,
+        change_master_password,
+        get_threads, get_workflows, save_workflow, sync_account, search_emails
+    ])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 }

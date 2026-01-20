@@ -1,4 +1,9 @@
 {
+  "common": {
+    "cancel": "キャンセル",
+    "save": "保存",
+    "loading": "読み込み中..."
+  },
   "sidebar": {
     "inbox": "受信トレイ",
     "workflows": "ワークフロー",
@@ -9,16 +14,93 @@
   },
   "inbox": {
     "title": "受信トレイ",
-    "search": "検索..."
+    "search": "検索...",
+    "sync": "メールを同期"
+  },
+  "thread": {
+    "no_subject": "件名なし",
+    "no_content": "本文なし",
+    "mock": {
+      "subject": "NexusMailへようこそ (ブラウザモード)",
+      "snippet": "ブラウザで実行されているため、これは模擬スレッドです。"
+    }
+  },
+  "chat": {
+    "reply_placeholder": "返信...",
+    "mock": {
+      "incoming": "こんにちは、先月分のサービス請求書を添付しました。ご不明な点がございましたらお知らせください。",
+      "outgoing": "受け取りました、ありがとうございます！すぐに処理します。"
+    }
   },
   "workflow": {
     "title": "自動化ワークフロー",
+    "subtitle": "自動化ルールの管理",
     "create": "新規作成",
+    "back": "ワークフローに戻る",
+    "stats": "{{triggers}} トリガー · {{actions}} アクション",
+    "editor": {
+      "title": "請求書自動化",
+      "desc": "新しいメールに「請求書」が含まれる場合に実行"
+    },
     "save": "保存",
-    "activate": "有効化"
+    "activate": "有効化",
+    "save_success": "ワークフローが保存されました！",
+    "save_simulated": "ワークフローが保存されました（シミュレーション）！",
+    "save_error": "ワークフローの保存に失敗しました。"
   },
   "settings": {
     "title": "設定",
-    "language": "言語"
+    "loading": "設定を読み込み中...",
+    "appearance": "外観",
+    "language": "言語",
+    "theme": {
+      "light": "ライト",
+      "dark": "ダーク",
+      "system": "システム"
+    },
+    "accounts": {
+      "title": "接続されたアカウント",
+      "add": "アカウントを追加",
+      "new_details": "新しいアカウントの詳細",
+      "email_placeholder": "メールアドレス",
+      "password_placeholder": "パスワード / アプリパスワード",
+      "server_placeholder": "IMAPサーバー (例: imap.gmail.com)",
+      "port_placeholder": "ポート (993)",
+      "save": "アカウントを保存",
+      "delete_confirm": "このアカウントを削除してもよろしいですか？",
+      "browser_mode": "ブラウザモードではアカウントを追加できません。",
+      "add_error": "アカウントの追加に失敗しました",
+      "no_accounts": "接続されたアカウントはまだありません。"
+    },
+    "sync": {
+      "title": "同期ステータス",
+      "pause": "一時停止",
+      "sync_now": "今すぐ同期",
+      "syncing": "同期中...",
+      "last_synced": "最終同期: たった今",
+      "channels": "チャンネル",
+      "active": "アクティブ"
+    },
+    "intelligence": {
+      "provider": "LLM プロバイダー",
+      "providers": {
+        "ollama": "Ollama (ローカル)",
+        "openai": "OpenAI",
+        "anthropic": "Anthropic"
+      },
+      "model": "モデル名",
+      "api_key": "API キー",
+      "secure_storage": "システムキーチェーンに安全に保存されます。"
+    },
+    "security": {
+      "db_encryption": "データベース暗号化",
+      "desc": "ローカルデータベースはマスターキーで暗号化されています。このキーは定期的に変更できます。",
+      "new_pw_placeholder": "新しいマスターパスワード",
+      "change_key": "キーを変更",
+      "processing": "処理中... これには時間がかかる場合があります。",
+      "success": "成功！データベースが再暗号化されました。",
+      "simulated": "成功（シミュレーション/ブラウザモード）",
+      "error": "パスワードの変更に失敗しました。"
+    }
   }
 }

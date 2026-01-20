@@ -11,6 +11,7 @@ import {
   type Connection,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
+import { useTranslation } from 'react-i18next';
 
 const initialNodes = [
   { id: '1', position: { x: 250, y: 100 }, data: { label: 'Trigger: New Email' }, style: { background: '#1F2937', color: 'white', border: '1px solid #3B82F6' } },
@@ -24,6 +25,7 @@ const initialEdges = [
 ];
 
 export const WorkflowEditor = ({ workflowId, onSave }: { workflowId?: string | null, onSave?: () => void }) => {
+  const { t } = useTranslation();
   const [nodes, , onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
@@ -55,15 +57,15 @@ actions:
       try {
           if (typeof window !== 'undefined' && '__TAURI__' in window) {
               await invoke('save_workflow', { yaml });
-              alert("Workflow saved successfully!");
+              alert(t('workflow.save_success', "Workflow saved successfully!"));
           } else {
               console.warn('Tauri API not available (running in browser?)');
-              alert("Workflow saved (simulated)!");
+              alert(t('workflow.save_simulated', "Workflow saved (simulated)!"));
           }
           if (onSave) onSave();
       } catch (err) {
           console.error(err);
-          alert("Failed to save workflow.");
+          alert(t('workflow.save_error', "Failed to save workflow."));
       }
   };
 
@@ -71,18 +73,18 @@ actions:
     <div className="w-full h-full bg-slate-950">
         <div className="p-4 border-b border-white/5 bg-slate-900/50 backdrop-blur-xl flex justify-between items-center z-10 relative">
             <div>
-                <h2 className="text-xl font-bold text-white">Invoice Automation</h2>
-                <p className="text-sm text-gray-400">Runs when new email contains "Invoice"</p>
+                <h2 className="text-xl font-bold text-white">{t('workflow.editor.title', "Invoice Automation")}</h2>
+                <p className="text-sm text-gray-400">{t('workflow.editor.desc', 'Runs when new email contains "Invoice"')}</p>
             </div>
             <div className="flex gap-2">
                 <button 
                     onClick={handleSave}
                     className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-colors border border-white/10"
                 >
-                    Save
+                    {t('workflow.save', "Save")}
                 </button>
                 <button className="px-4 py-2 bg-lumina-active text-white rounded-lg shadow-lg shadow-blue-500/20">
-                    Activate
+                    {t('workflow.activate', "Activate")}
                 </button>
             </div>
         </div>

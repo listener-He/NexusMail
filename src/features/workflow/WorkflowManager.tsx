@@ -57,7 +57,7 @@ export const WorkflowManager = () => {
                 onClick={() => setIsEditing(false)}
                 className="self-start m-4 text-gray-400 hover:text-white"
               >
-                  &larr; Back to Workflows
+                  &larr; {t('workflow.back', "Back to Workflows")}
               </button>
               <div className="flex-1">
                  <WorkflowEditor workflowId={currentWorkflowId} onSave={() => setIsEditing(false)} />
@@ -73,7 +73,7 @@ export const WorkflowManager = () => {
             <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-lumina-primary">
                 {t('workflow.title')}
             </h1>
-            <p className="text-gray-400 mt-2">Manage your automation rules</p>
+            <p className="text-gray-400 mt-2">{t('workflow.subtitle', "Manage your automation rules")}</p>
         </div>
         <button 
             onClick={handleCreate}
@@ -93,7 +93,9 @@ export const WorkflowManager = () => {
                       </div>
                       <div>
                           <h3 className="font-semibold text-lg">{wf.name}</h3>
-                          <p className="text-sm text-gray-500">{wf.triggers.length} triggers · {wf.actions.length} actions</p>
+                          <p className="text-sm text-gray-500">
+                              {t('workflow.stats', { triggers: wf.triggers.length, actions: wf.actions.length, defaultValue: "{{triggers}} triggers · {{actions}} actions" })}
+                          </p>
                       </div>
                   </div>
                   

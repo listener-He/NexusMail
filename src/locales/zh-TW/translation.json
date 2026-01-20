@@ -1,4 +1,9 @@
 {
+  "common": {
+    "cancel": "取消",
+    "save": "儲存",
+    "loading": "載入中..."
+  },
   "sidebar": {
     "inbox": "收件箱",
     "workflows": "工作流程",
@@ -9,16 +14,93 @@
   },
   "inbox": {
     "title": "收件箱",
-    "search": "搜尋..."
+    "search": "搜尋...",
+    "sync": "同步郵件"
+  },
+  "thread": {
+    "no_subject": "無主旨",
+    "no_content": "無內容",
+    "mock": {
+      "subject": "歡迎使用 NexusMail (瀏覽器模式)",
+      "snippet": "這是一條模擬對話，因為您正在瀏覽器中運行。"
+    }
+  },
+  "chat": {
+    "reply_placeholder": "回覆...",
+    "mock": {
+      "incoming": "您好，請查收上個月的服務發票。如有任何問題，請告知我。",
+      "outgoing": "收到，謝謝！我會立即處理。"
+    }
   },
   "workflow": {
     "title": "自動化工作流程",
+    "subtitle": "管理您的自動化規則",
     "create": "新增工作流程",
+    "back": "返回工作流程",
+    "stats": "{{triggers}} 個觸發器 · {{actions}} 個動作",
+    "editor": {
+      "title": "發票自動化",
+      "desc": "當新郵件包含「發票」時運行"
+    },
     "save": "儲存",
-    "activate": "啟用"
+    "activate": "啟用",
+    "save_success": "工作流程儲存成功！",
+    "save_simulated": "工作流程已儲存（模擬）！",
+    "save_error": "儲存工作流程失敗。"
   },
   "settings": {
     "title": "設定",
-    "language": "語言"
+    "loading": "正在載入設定...",
+    "appearance": "外觀",
+    "language": "語言",
+    "theme": {
+      "light": "淺色",
+      "dark": "深色",
+      "system": "系統"
+    },
+    "accounts": {
+      "title": "已連結帳戶",
+      "add": "新增帳戶",
+      "new_details": "新帳戶詳情",
+      "email_placeholder": "電子郵件地址",
+      "password_placeholder": "密碼 / 應用專用密碼",
+      "server_placeholder": "IMAP 伺服器 (例如 imap.gmail.com)",
+      "port_placeholder": "連接埠 (993)",
+      "save": "儲存帳戶",
+      "delete_confirm": "您確定要刪除此帳戶嗎？",
+      "browser_mode": "無法在瀏覽器模式下新增帳戶。",
+      "add_error": "新增帳戶失敗",
+      "no_accounts": "暫無連結的帳戶。"
+    },
+    "sync": {
+      "title": "同步狀態",
+      "pause": "暫停",
+      "sync_now": "立即同步",
+      "syncing": "同步中...",
+      "last_synced": "上次同步：剛剛",
+      "channels": "渠道",
+      "active": "活躍"
+    },
+    "intelligence": {
+      "provider": "LLM 提供商",
+      "providers": {
+        "ollama": "Ollama (本地)",
+        "openai": "OpenAI",
+        "anthropic": "Anthropic"
+      },
+      "model": "模型名稱",
+      "api_key": "API 金鑰",
+      "secure_storage": "安全存儲在系統鑰匙圈中。"
+    },
+    "security": {
+      "db_encryption": "資料庫加密",
+      "desc": "您的本地資料庫已使用主金鑰加密。您可以定期輪換此金鑰。",
+      "new_pw_placeholder": "新主密碼",
+      "change_key": "更改金鑰",
+      "processing": "處理中... 這可能需要一些時間。",
+      "success": "成功！資料庫已重新加密。",
+      "simulated": "模擬成功（瀏覽器模式）",
+      "error": "更改密碼失敗。"
+    }
   }
 }

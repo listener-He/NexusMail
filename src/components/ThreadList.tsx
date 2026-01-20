@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { Search, RefreshCw } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 // Thread Interface / 会话接口
 // Corresponds to the Rust `Thread` struct.
@@ -18,6 +19,7 @@ interface Thread {
 // Displays a scrollable list of email threads.
 // 显示可滚动的邮件会话列表。
 export const ThreadList = () => {
+  const { t } = useTranslation();
   const [threads, setThreads] = useState<Thread[]>([]);
   const [isSyncing, setIsSyncing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -33,8 +35,8 @@ export const ThreadList = () => {
             setThreads([
                 {
                     id: "1",
-                    subject: "Welcome to NexusMail (Browser Mode)",
-                    snippet: "This is a mock thread because you are running in the browser.",
+                    subject: t('thread.mock.subject', "Welcome to NexusMail (Browser Mode)"),
+                    snippet: t('thread.mock.snippet', "This is a mock thread because you are running in the browser."),
                     last_message_at: new Date().toISOString(),
                     is_read: false,
                     tags: ["demo"]
@@ -83,7 +85,7 @@ export const ThreadList = () => {
 
   useEffect(() => {
     fetchThreads();
-  }, []);
+  }, [t]); // Re-fetch or re-render when language changes
 
   // Handle Sync Action / 处理同步操作
   const handleSync = async () => {
@@ -118,12 +120,12 @@ export const ThreadList = () => {
       <div className="p-4 border-b border-white/5">
         <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-bold bg-clip-text text-transparent bg-lumina-primary select-none">
-              Inbox
+              {t('inbox.title')}
             </h2>
             <button 
                 onClick={handleSync}
                 className={`p-2 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all ${isSyncing ? 'animate-spin text-blue-400' : ''}`}
-                title="Sync Emails"
+                title={t('inbox.sync', "Sync Emails")}
             >
                 <RefreshCw size={18} />
             </button>
@@ -134,7 +136,7 @@ export const ThreadList = () => {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-blue-400 transition-colors" size={16} />
             <input 
                 type="text" 
-                placeholder="Search..." 
+                placeholder={t('inbox.search', "Search...")} 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={handleSearch}
@@ -152,14 +154,14 @@ export const ThreadList = () => {
           >
             <div className="flex justify-between items-start mb-1">
               <h3 className={`font-medium truncate pr-2 text-sm ${!thread.is_read ? 'text-white' : 'text-gray-400'}`}>
-                {thread.subject || "No Subject"}
+                {thread.subject || t('thread.no_subject', "No Subject")}
               </h3>
               {!thread.is_read && (
                 <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 flex-shrink-0 shadow-lg shadow-blue-500/50"></div>
               )}
             </div>
             <p className="text-xs text-gray-500 line-clamp-2 group-hover:text-gray-400 transition-colors leading-relaxed">
-              {thread.snippet || "No content"}
+              {thread.snippet || t('thread.no_content', "No content")}
             </p>
             {/* Tags / 标签 */}
             {thread.tags && thread.tags.length > 0 && (

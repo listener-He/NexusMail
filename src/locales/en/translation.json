@@ -1,4 +1,9 @@
 {
+  "common": {
+    "cancel": "Cancel",
+    "save": "Save",
+    "loading": "Loading..."
+  },
   "sidebar": {
     "inbox": "Inbox",
     "workflows": "Workflows",
@@ -9,16 +14,93 @@
   },
   "inbox": {
     "title": "Inbox",
-    "search": "Search..."
+    "search": "Search...",
+    "sync": "Sync Emails"
+  },
+  "thread": {
+    "no_subject": "No Subject",
+    "no_content": "No content",
+    "mock": {
+      "subject": "Welcome to NexusMail (Browser Mode)",
+      "snippet": "This is a mock thread because you are running in the browser."
+    }
+  },
+  "chat": {
+    "reply_placeholder": "Reply...",
+    "mock": {
+      "incoming": "Hi there, please find attached the invoice for the last month services. Let me know if you have any questions.",
+      "outgoing": "Received, thanks! I'll process this right away."
+    }
   },
   "workflow": {
     "title": "Automation Workflows",
+    "subtitle": "Manage your automation rules",
     "create": "New Workflow",
+    "back": "Back to Workflows",
+    "stats": "{{triggers}} triggers · {{actions}} actions",
+    "editor": {
+      "title": "Invoice Automation",
+      "desc": "Runs when new email contains \"Invoice\""
+    },
     "save": "Save",
-    "activate": "Activate"
+    "activate": "Activate",
+    "save_success": "Workflow saved successfully!",
+    "save_simulated": "Workflow saved (simulated)!",
+    "save_error": "Failed to save workflow."
   },
   "settings": {
     "title": "Settings",
-    "language": "Language"
+    "loading": "Loading settings...",
+    "appearance": "Appearance",
+    "language": "Language",
+    "theme": {
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System"
+    },
+    "accounts": {
+      "title": "Connected Accounts",
+      "add": "Add Account",
+      "new_details": "New Account Details",
+      "email_placeholder": "Email Address",
+      "password_placeholder": "Password / App Password",
+      "server_placeholder": "IMAP Server (e.g. imap.gmail.com)",
+      "port_placeholder": "Port (993)",
+      "save": "Save Account",
+      "delete_confirm": "Are you sure you want to delete this account?",
+      "browser_mode": "Cannot add account in browser mode.",
+      "add_error": "Failed to add account",
+      "no_accounts": "No accounts connected yet."
+    },
+    "sync": {
+      "title": "Sync Status",
+      "pause": "Pause",
+      "sync_now": "Sync Now",
+      "syncing": "Syncing...",
+      "last_synced": "Last synced: Just now",
+      "channels": "Channels",
+      "active": "Active"
+    },
+    "intelligence": {
+      "provider": "LLM Provider",
+      "providers": {
+        "ollama": "Ollama (Local)",
+        "openai": "OpenAI",
+        "anthropic": "Anthropic"
+      },
+      "model": "Model Name",
+      "api_key": "API Key",
+      "secure_storage": "Stored securely in system keychain."
+    },
+    "security": {
+      "db_encryption": "Database Encryption",
+      "desc": "Your local database is encrypted with a master key. You can rotate this key periodically.",
+      "new_pw_placeholder": "New Master Password",
+      "change_key": "Change Key",
+      "processing": "Processing... This may take a while.",
+      "success": "Success! Database re-encrypted.",
+      "simulated": "Simulated success (Browser mode)",
+      "error": "Failed to change password."
+    }
   }
 }
