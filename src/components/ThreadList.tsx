@@ -23,10 +23,27 @@ export const ThreadList = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
   // Fetch threads from backend / 从后端获取会话
-  const fetchThreads = () => {
-    invoke<Thread[]>('get_threads')
-      .then(setThreads)
-      .catch(console.error);
+  const fetchThreads = async () => {
+    try {
+        if (typeof window !== 'undefined' && '__TAURI__' in window) {
+            const result = await invoke<Thread[]>('get_threads');
+            setThreads(result);
+        } else {
+            console.warn('Tauri API not available (running in browser?)');
+            setThreads([
+                {
+                    id: "1",
+                    subject: "Welcome to NexusMail (Browser Mode)",
+                    snippet: "This is a mock thread because you are running in the browser.",
+                    last_message_at: new Date().toISOString(),
+                    is_read: false,
+                    tags: ["demo"]
+                }
+            ]);
+        }
+    } catch (err) {
+        console.error("Failed to fetch threads:", err);
+    }
   };
 
   // Handle Search Input / 处理搜索输入
@@ -37,21 +54,26 @@ export const ThreadList = () => {
                   fetchThreads();
                   return;
               }
-              // Call full-text search / 调用全文搜索
-              const results = await invoke<string[]>('search_emails', { query: searchQuery });
-              console.log("Search results (IDs):", results);
               
-              // Note: Ideally, we should fetch the specific threads by ID here.
-              // 注意：理想情况下，我们应该在此处按 ID 获取特定会话。
-              if (results.length === 0) {
-                  // alert("No emails found matching your query."); 
-                  // UX Improvement: No alert, just empty list or toast
+              if (typeof window !== 'undefined' && '__TAURI__' in window) {
+                  // Call full-text search / 调用全文搜索
+                  const results = await invoke<string[]>('search_emails', { query: searchQuery });
+                  console.log("Search results (IDs):", results);
+                  
+                  // Note: Ideally, we should fetch the specific threads by ID here.
+                  // 注意：理想情况下，我们应该在此处按 ID 获取特定会话。
+                  if (results.length === 0) {
+                      // alert("No emails found matching your query."); 
+                      // UX Improvement: No alert, just empty list or toast
+                  } else {
+                      // alert(`Found ${results.length} emails!`);
+                      // Filter local threads for POC visualization (Real app would query DB)
+                      // 过滤本地会话用于 POC 可视化（实际应用将查询数据库）
+                      // For now, let's just refresh to show we "tried"
+                      // 目前，我们只是刷新以显示我们“尝试过”
+                  }
               } else {
-                  // alert(`Found ${results.length} emails!`);
-                  // Filter local threads for POC visualization (Real app would query DB)
-                  // 过滤本地会话用于 POC 可视化（实际应用将查询数据库）
-                  // For now, let's just refresh to show we "tried"
-                  // 目前，我们只是刷新以显示我们“尝试过”
+                  console.warn('Tauri API not available (running in browser?)');
               }
           } catch (err) {
               console.error(err);
@@ -67,14 +89,20 @@ export const ThreadList = () => {
   const handleSync = async () => {
     setIsSyncing(true);
     try {
-        // TODO: Replace with real user input from a Settings Modal
-        // TODO: 替换为来自设置模态框的真实用户输入
-        await invoke('sync_account', { 
-            email: "test@example.com", 
-            password: "password", 
-            server: "imap.example.com" 
-        });
-        fetchThreads();
+        if (typeof window !== 'undefined' && '__TAURI__' in window) {
+            // TODO: Replace with real user input from a Settings Modal
+            // TODO: 替换为来自设置模态框的真实用户输入
+            await invoke('sync_account', { 
+                email: "test@example.com", 
+                password: "password", 
+                server: "imap.example.com" 
+            });
+            fetchThreads();
+        } else {
+             console.warn('Tauri API not available (running in browser?)');
+             // Simulate sync delay
+             setTimeout(() => setIsSyncing(false), 1000);
+        }
     } catch (error) {
         console.error("Sync failed (expected in POC without real creds):", error);
         // Refresh anyway to show if any data changed

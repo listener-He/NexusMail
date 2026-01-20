@@ -8,8 +8,7 @@ import {
   useNodesState,
   useEdgesState,
   addEdge,
-  Connection,
-  Edge,
+  type Connection,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
@@ -25,7 +24,7 @@ const initialEdges = [
 ];
 
 export const WorkflowEditor = () => {
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+  const [nodes, , onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
   const onConnect = useCallback(
@@ -54,8 +53,13 @@ actions:
     config: "{}"
 `;
       try {
-          await invoke('save_workflow', { yaml });
-          alert("Workflow saved successfully!");
+          if (typeof window !== 'undefined' && '__TAURI__' in window) {
+              await invoke('save_workflow', { yaml });
+              alert("Workflow saved successfully!");
+          } else {
+              console.warn('Tauri API not available (running in browser?)');
+              alert("Workflow saved (simulated)!");
+          }
       } catch (err) {
           console.error(err);
           alert("Failed to save workflow.");

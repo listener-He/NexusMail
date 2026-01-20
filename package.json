@@ -7,9 +7,11 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "tauri": "tauri"
   },
   "dependencies": {
+    "@tauri-apps/api": "^2.9.1",
     "@xyflow/react": "^12.10.0",
     "clsx": "^2.1.1",
     "lucide-react": "^0.562.0",
