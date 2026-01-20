@@ -4,13 +4,18 @@ use mailparse::*;
 use std::sync::Arc;
 use crate::database::Database;
 
+use crate::engine::Engine;
+use crate::engine::search::SearchService;
+
 pub struct IngestionService {
     db: Arc<Database>,
+    engine: Arc<Engine>,
+    search: Arc<SearchService>,
 }
 
 impl IngestionService {
-    pub fn new(db: Arc<Database>) -> Self {
-        Self { db }
+    pub fn new(db: Arc<Database>, engine: Arc<Engine>, search: Arc<SearchService>) -> Self {
+        Self { db, engine, search }
     }
 
     pub async fn sync_account(&self, email: &str, password: &str, server: &str) -> Result<(), Box<dyn std::error::Error>> {
@@ -43,7 +48,19 @@ impl IngestionService {
                 // In reality, we'd check In-Reply-To or Subject grouping
                 let thread_id = self.db.create_thread(&subject, &body_text).await?;
                 
-                self.db.add_message(&thread_id, &sender_id, &subject, &body_text, "").await?;
+                let message_id = self.db.add_message(&thread_id, &sender_id, &subject, &body_text, "").await?;
+
+                // Trigger Nexus Engine
+                if let Err(e) = self.engine.process_email(&self.db, &message_id, &subject, &from).await {
+                    println!("Error processing workflow: {}", e);
+                }
+
+                // Index for Search
+                // In production, you might want to strip HTML tags or use the body_text more intelligently
+                let search_text = format!("{} {}", subject, body_text);
+                if let Err(e) = self.search.index_email(&message_id, &search_text).await {
+                     println!("Error indexing email: {}", e);
+                }
             }
         }
 

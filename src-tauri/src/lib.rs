@@ -23,10 +23,17 @@ async fn save_workflow(state: State<'_, Arc<Engine>>, yaml: String) -> Result<()
 // Command to fetch threads (Mock implementation for now)
 use crate::engine::ingestion::IngestionService;
 
+use crate::engine::search::SearchService;
+
 #[tauri::command]
-async fn sync_account(state: State<'_, Arc<Database>>, email: String, password: String, server: String) -> Result<(), String> {
-    let ingestion = IngestionService::new(state.inner().clone());
+async fn sync_account(state: State<'_, Arc<Database>>, engine: State<'_, Arc<Engine>>, search: State<'_, Arc<SearchService>>, email: String, password: String, server: String) -> Result<(), String> {
+    let ingestion = IngestionService::new(state.inner().clone(), engine.inner().clone(), search.inner().clone());
     ingestion.sync_account(&email, &password, &server).await.map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+async fn search_emails(search: State<'_, Arc<SearchService>>, query: String) -> Result<Vec<String>, String> {
+    search.search(&query).await.map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -70,12 +77,25 @@ pub fn run() {
       // Initialize Engine
       let engine = Arc::new(Engine::new());
       
+      // Initialize Search Service
+      let search = Arc::new(SearchService::new());
+      let search_clone = search.clone();
+      
+      // Connect to Sonic (Localhost for now)
+      tauri::async_runtime::spawn(async move {
+          // Note: In production, ensure Sonic is running or start it as a sidecar
+          if let Err(e) = search_clone.connect("127.0.0.1:1491", "SecretPassword").await {
+              log::warn!("Failed to connect to Search Engine: {}", e);
+          }
+      });
+
       app.manage(db_arc);
       app.manage(engine);
+      app.manage(search);
 
       Ok(())
     })
-    .invoke_handler(tauri::generate_handler![get_threads, get_workflows, save_workflow, sync_account])
+    .invoke_handler(tauri::generate_handler![get_threads, get_workflows, save_workflow, sync_account, search_emails])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 }
