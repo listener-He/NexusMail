@@ -1,7 +1,9 @@
+pub mod config;
 pub mod database;
 pub mod engine;
 pub mod security;
 
+use crate::config::{AppConfig, ConfigManager};
 use crate::database::Database;
 use crate::engine::Engine;
 use crate::engine::models::Workflow;
@@ -12,28 +14,21 @@ use crate::database::models::Thread;
 use tauri::{Manager, State};
 use std::sync::Arc;
 
-// --- Configuration Struct / 配置结构 ---
-// In a real app, this would be loaded from a config file or env vars.
-// 在实际应用中，这将从配置文件或环境变量加载。
-struct AppConfig {
-    db_key: String,
-    sonic_host: String,
-    sonic_password: String,
-    sonic_port: u16,
-}
-
-impl Default for AppConfig {
-    fn default() -> Self {
-        Self {
-            db_key: "dev_secret_key".to_string(), // TODO: Use Keychain / 使用钥匙串
-            sonic_host: "127.0.0.1".to_string(),
-            sonic_password: "SecretPassword".to_string(),
-            sonic_port: 1491,
-        }
-    }
-}
-
 // --- Tauri Commands / Tauri 命令 ---
+
+/// Get the current application configuration.
+/// 获取当前应用程序配置。
+#[tauri::command]
+async fn get_config(state: State<'_, Arc<ConfigManager>>) -> Result<AppConfig, String> {
+    Ok(state.get_config())
+}
+
+/// Update the application configuration.
+/// 更新应用程序配置。
+#[tauri::command]
+async fn save_config(state: State<'_, Arc<ConfigManager>>, config: AppConfig) -> Result<(), String> {
+    state.update_config(|c| *c = config).map_err(|e| e.to_string())
+}
 
 /// Retrieve all active workflows.
 /// 获取所有活动工作流。
@@ -90,17 +85,20 @@ pub fn run() {
 
       // Load Config
       // 加载配置
-      let config = AppConfig::default();
-
-      // 2. Initialize Database / 初始化数据库
       let app_handle = app.handle();
       let app_dir = app_handle.path().app_data_dir().unwrap();
       if !app_dir.exists() {
           std::fs::create_dir_all(&app_dir).unwrap();
       }
+      
+      let config_manager = Arc::new(ConfigManager::new(app_dir.clone()));
+      let config = config_manager.get_config();
+
+      // 2. Initialize Database / 初始化数据库
       let db_path = app_dir.join("nexusmail.db");
       
-      let db = Database::new(db_path, &config.db_key).expect("Failed to init database");
+      // Use a hardcoded key for now, in production use Keychain
+      let db = Database::new(db_path, "dev_secret_key").expect("Failed to init database");
       let db_arc = Arc::new(db);
       
       // Run DB Migrations (Async)
@@ -119,21 +117,27 @@ pub fn run() {
       
       // Connect to Sonic (Async Background Task)
       // 连接到 Sonic（异步后台任务）
+      let sonic_host = config.search.host.clone();
+      let sonic_port = config.search.port;
+      // Password is not in config for security, using hardcoded for now
+      let sonic_password = "SecretPassword".to_string(); 
+
       tauri::async_runtime::spawn(async move {
-          match search_clone.connect(&config.sonic_host, config.sonic_port, &config.sonic_password).await {
+          match search_clone.connect(&sonic_host, sonic_port, &sonic_password).await {
               Ok(port) => log::info!("Connected to Search Engine on port {}", port),
               Err(e) => log::warn!("Failed to connect to Search Engine: {}", e),
           }
       });
 
       // 5. Manage State / 管理状态
+      app.manage(config_manager);
       app.manage(db_arc);
       app.manage(engine);
       app.manage(search);
 
       Ok(())
     })
-    .invoke_handler(tauri::generate_handler![get_threads, get_workflows, save_workflow, sync_account, search_emails])
+    .invoke_handler(tauri::generate_handler![get_config, save_config, get_threads, get_workflows, save_workflow, sync_account, search_emails])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 }
