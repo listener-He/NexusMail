@@ -15,10 +15,35 @@ export const ThreadList = () => {
   const [threads, setThreads] = useState<Thread[]>([]);
   const [isSyncing, setIsSyncing] = useState(false);
 
+  const [searchQuery, setSearchQuery] = useState("");
+
   const fetchThreads = () => {
     invoke<Thread[]>('get_threads')
       .then(setThreads)
       .catch(console.error);
+  };
+
+  const handleSearch = async (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === 'Enter') {
+          try {
+              if (!searchQuery.trim()) {
+                  fetchThreads();
+                  return;
+              }
+              const results = await invoke<string[]>('search_emails', { query: searchQuery });
+              console.log("Search results (IDs):", results);
+              // For now, since we only get IDs back from Sonic, we would need to fetch the actual threads by ID.
+              // For this POC, we'll just log them. In a real app, we'd have a `get_threads_by_ids` command.
+              // To demonstrate UI feedback:
+              if (results.length === 0) {
+                  alert("No emails found matching your query.");
+              } else {
+                  alert(`Found ${results.length} emails! (IDs logged to console)`);
+              }
+          } catch (err) {
+              console.error(err);
+          }
+      }
   };
 
   useEffect(() => {
@@ -63,6 +88,9 @@ export const ThreadList = () => {
             <input 
                 type="text" 
                 placeholder="Search..." 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={handleSearch}
                 className="w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-2 text-sm text-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500/50 transition-all"
             />
         </div>

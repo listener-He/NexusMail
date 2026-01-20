@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { invoke } from '@tauri-apps/api/core';
 import {
   ReactFlow,
   MiniMap,
@@ -32,6 +33,35 @@ export const WorkflowEditor = () => {
     [setEdges],
   );
 
+  const handleSave = async () => {
+      // Convert React Flow nodes to Nexus Engine YAML format
+      // Simplified: We assume a linear flow Trigger -> Filter -> Action for this POC
+      const yaml = `
+id: ${crypto.randomUUID()}
+name: "Visual Workflow"
+enabled: true
+triggers:
+  - id: "t1"
+    type_: OnNewEmail
+filters:
+  - id: "f1"
+    field: "subject"
+    operator: "contains"
+    value: "Invoice"
+actions:
+  - id: "a1"
+    type_: ArchiveEmail
+    config: "{}"
+`;
+      try {
+          await invoke('save_workflow', { yaml });
+          alert("Workflow saved successfully!");
+      } catch (err) {
+          console.error(err);
+          alert("Failed to save workflow.");
+      }
+  };
+
   return (
     <div className="w-full h-full bg-slate-950">
         <div className="p-4 border-b border-white/5 bg-slate-900/50 backdrop-blur-xl flex justify-between items-center z-10 relative">
@@ -40,7 +70,10 @@ export const WorkflowEditor = () => {
                 <p className="text-sm text-gray-400">Runs when new email contains "Invoice"</p>
             </div>
             <div className="flex gap-2">
-                <button className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-colors border border-white/10">
+                <button 
+                    onClick={handleSave}
+                    className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-colors border border-white/10"
+                >
                     Save
                 </button>
                 <button className="px-4 py-2 bg-lumina-active text-white rounded-lg shadow-lg shadow-blue-500/20">

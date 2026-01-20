@@ -52,8 +52,10 @@ impl Engine {
             match action.type_ {
                 models::ActionType::ArchiveEmail => {
                     println!("Executing Action: Archive Email {}", message_id);
-                    // In a real implementation, we would update the DB here
-                    // db.archive_message(message_id).await?;
+                    // Update DB
+                    if let Err(e) = db.archive_message(message_id).await {
+                        println!("Failed to archive message: {}", e);
+                    }
                 }
                 models::ActionType::MarkAsRead => {
                     println!("Executing Action: Mark as Read {}", message_id);

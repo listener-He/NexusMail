@@ -84,8 +84,9 @@ pub fn run() {
       // Connect to Sonic (Localhost for now)
       tauri::async_runtime::spawn(async move {
           // Note: In production, ensure Sonic is running or start it as a sidecar
-          if let Err(e) = search_clone.connect("127.0.0.1:1491", "SecretPassword").await {
-              log::warn!("Failed to connect to Search Engine: {}", e);
+          match search_clone.connect("127.0.0.1", 1491, "SecretPassword").await {
+              Ok(port) => log::info!("Connected to Search Engine on port {}", port),
+              Err(e) => log::warn!("Failed to connect to Search Engine: {}", e),
           }
       });
 

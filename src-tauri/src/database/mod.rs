@@ -12,6 +12,48 @@ pub struct Database {
 }
 
 impl Database {
+    pub async fn archive_message(&self, message_id: &str) -> Result<()> {
+        let conn = self.conn.lock().await;
+        
+        // Find thread for message
+        let thread_id: String = conn.query_row(
+            "SELECT thread_id FROM messages WHERE id = ?1",
+            params![message_id],
+            |row| row.get(0),
+        )?;
+
+        // Mark thread as archived
+        conn.execute(
+            "UPDATE threads SET is_archived = 1 WHERE id = ?1",
+            params![thread_id],
+        )?;
+
+        Ok(())
+    }
+}
+
+impl Database {
+    pub async fn archive_message(&self, message_id: &str) -> Result<()> {
+        let conn = self.conn.lock().await;
+        
+        // Find thread for message
+        let thread_id: String = conn.query_row(
+            "SELECT thread_id FROM messages WHERE id = ?1",
+            params![message_id],
+            |row| row.get(0),
+        )?;
+
+        // Mark thread as archived
+        conn.execute(
+            "UPDATE threads SET is_archived = 1 WHERE id = ?1",
+            params![thread_id],
+        )?;
+
+        Ok(())
+    }
+}
+
+impl Database {
     pub fn new<P: AsRef<Path>>(path: P, key: &str) -> Result<Self> {
         let conn = Connection::open(path)?;
         conn.pragma_update(None, "key", &key)?;

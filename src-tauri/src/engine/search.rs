@@ -15,16 +15,31 @@ impl SearchService {
         }
     }
 
-    pub async fn connect(&self, addr: &str, password: &str) -> Result<(), Box<dyn std::error::Error>> {
-        // Ingest Connection
-        let ingest = IngestChannel::start(addr, password).await?;
-        *self.ingest_channel.lock().await = Some(ingest);
-
-        // Search Connection
-        let search = SearchChannel::start(addr, password).await?;
-        *self.search_channel.lock().await = Some(search);
-
-        Ok(())
+    pub async fn connect(&self, host: &str, start_port: u16, password: &str) -> Result<u16, Box<dyn std::error::Error>> {
+        let ports = vec![start_port, start_port + 1, start_port + 2];
+        
+        for port in ports {
+            let addr = format!("{}:{}", host, port);
+            println!("Attempting to connect to Sonic at {}", addr);
+            
+            match IngestChannel::start(&addr, password).await {
+                Ok(ingest) => {
+                    // If ingest works, try search channel
+                    match SearchChannel::start(&addr, password).await {
+                        Ok(search) => {
+                            println!("Successfully connected to Sonic at {}", addr);
+                            *self.ingest_channel.lock().await = Some(ingest);
+                            *self.search_channel.lock().await = Some(search);
+                            return Ok(port);
+                        },
+                        Err(_) => continue,
+                    }
+                },
+                Err(_) => continue,
+            }
+        }
+        
+        Err("Failed to connect to Sonic on any attempted port".into())
     }
 
     pub async fn index_email(&self, id: &str, text: &str) -> Result<(), Box<dyn std::error::Error>> {
