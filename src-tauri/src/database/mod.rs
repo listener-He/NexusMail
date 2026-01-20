@@ -7,65 +7,44 @@ use crate::database::models::{Thread, Message, Participant};
 
 pub mod models;
 
+/// 数据库管理器 (Database Manager)
+/// Wraps the SQLite connection in a thread-safe Mutex.
+/// 将 SQLite 连接包装在线程安全的互斥锁中。
 pub struct Database {
     pub conn: Mutex<Connection>,
 }
 
 impl Database {
-    pub async fn archive_message(&self, message_id: &str) -> Result<()> {
-        let conn = self.conn.lock().await;
-        
-        // Find thread for message
-        let thread_id: String = conn.query_row(
-            "SELECT thread_id FROM messages WHERE id = ?1",
-            params![message_id],
-            |row| row.get(0),
-        )?;
-
-        // Mark thread as archived
-        conn.execute(
-            "UPDATE threads SET is_archived = 1 WHERE id = ?1",
-            params![thread_id],
-        )?;
-
-        Ok(())
-    }
-}
-
-impl Database {
-    pub async fn archive_message(&self, message_id: &str) -> Result<()> {
-        let conn = self.conn.lock().await;
-        
-        // Find thread for message
-        let thread_id: String = conn.query_row(
-            "SELECT thread_id FROM messages WHERE id = ?1",
-            params![message_id],
-            |row| row.get(0),
-        )?;
-
-        // Mark thread as archived
-        conn.execute(
-            "UPDATE threads SET is_archived = 1 WHERE id = ?1",
-            params![thread_id],
-        )?;
-
-        Ok(())
-    }
-}
-
-impl Database {
+    /// Create a new encrypted database connection.
+    /// 创建一个新的加密数据库连接。
+    ///
+    /// # Arguments
+    /// * `path` - File path to the database / 数据库文件路径
+    /// * `key` - Encryption key (SQLCipher) / 加密密钥
     pub fn new<P: AsRef<Path>>(path: P, key: &str) -> Result<Self> {
         let conn = Connection::open(path)?;
+        
+        // Set the encryption key via PRAGMA
+        // 通过 PRAGMA 设置加密密钥
         conn.pragma_update(None, "key", &key)?;
+        
         Ok(Database {
             conn: Mutex::new(conn),
         })
     }
 
+    /// Initialize database schema (Tables & Indexes).
+    /// 初始化数据库模式（表和索引）。
+    /// This should be called on application startup.
+    /// 应在应用程序启动时调用此方法。
     pub async fn init(&self) -> Result<()> {
         let conn = self.conn.lock().await;
+        
+        // Enforce foreign key constraints
+        // 强制执行外键约束
         conn.pragma_update(None, "foreign_keys", "ON")?;
 
+        // 1. Accounts Table / 账户表
         conn.execute(
             "CREATE TABLE IF NOT EXISTS accounts (
                 id TEXT PRIMARY KEY,
@@ -77,6 +56,7 @@ impl Database {
             [],
         )?;
 
+        // 2. Identity Hub (Participants) / 身份中心（参与者）
         conn.execute(
             "CREATE TABLE IF NOT EXISTS participants (
                 id TEXT PRIMARY KEY,
@@ -88,6 +68,7 @@ impl Database {
             [],
         )?;
 
+        // 3. Threads / 会话
         conn.execute(
             "CREATE TABLE IF NOT EXISTS threads (
                 id TEXT PRIMARY KEY,
@@ -101,6 +82,7 @@ impl Database {
             [],
         )?;
 
+        // 4. Messages / 消息
         conn.execute(
             "CREATE TABLE IF NOT EXISTS messages (
                 id TEXT PRIMARY KEY,
@@ -116,6 +98,7 @@ impl Database {
             [],
         )?;
 
+        // 5. Attachments / 附件
         conn.execute(
             "CREATE TABLE IF NOT EXISTS attachments (
                 id TEXT PRIMARY KEY,
@@ -130,6 +113,7 @@ impl Database {
             [],
         )?;
 
+        // Indexes for Performance / 性能索引
         conn.execute("CREATE INDEX IF NOT EXISTS idx_threads_last_msg ON threads(last_message_at DESC)", [])?;
         conn.execute("CREATE INDEX IF NOT EXISTS idx_messages_thread ON messages(thread_id)", [])?;
         conn.execute("CREATE INDEX IF NOT EXISTS idx_attachments_hash ON attachments(hash)", [])?;
@@ -139,10 +123,14 @@ impl Database {
 
     // --- Insert / Update Methods ---
 
+    /// Create or retrieve a participant by email.
+    /// 通过电子邮件创建或检索参与者。
+    /// Ensures idempotency for senders.
+    /// 确保发送者的幂等性。
     pub async fn create_or_get_participant(&self, email: &str, name: Option<&str>) -> Result<String> {
         let conn = self.conn.lock().await;
         
-        // Try to find existing
+        // Try to find existing / 尝试查找现有的
         let mut stmt = conn.prepare("SELECT id FROM participants WHERE email = ?1")?;
         let existing_id: Option<String> = stmt.query_row(params![email], |row| row.get(0)).ok();
 
@@ -150,7 +138,7 @@ impl Database {
             return Ok(id);
         }
 
-        // Create new
+        // Create new / 创建新的
         let id = Uuid::new_v4().to_string();
         conn.execute(
             "INSERT INTO participants (id, email, name) VALUES (?1, ?2, ?3)",
@@ -159,6 +147,8 @@ impl Database {
         Ok(id)
     }
 
+    /// Create a new thread.
+    /// 创建一个新的会话。
     pub async fn create_thread(&self, subject: &str, snippet: &str) -> Result<String> {
         let conn = self.conn.lock().await;
         let id = Uuid::new_v4().to_string();
@@ -171,6 +161,10 @@ impl Database {
         Ok(id)
     }
 
+    /// Add a message to a thread.
+    /// 向会话添加一条消息。
+    /// Also updates the thread's `last_message_at` and `snippet`.
+    /// 同时更新会话的 `last_message_at` 和 `snippet`。
     pub async fn add_message(&self, thread_id: &str, sender_id: &str, subject: &str, text: &str, html: &str) -> Result<String> {
         let conn = self.conn.lock().await;
         let id = Uuid::new_v4().to_string();
@@ -182,7 +176,7 @@ impl Database {
             params![id, thread_id, sender_id, subject, text, html, now],
         )?;
 
-        // Update thread snippet and time
+        // Update thread snippet and time / 更新会话摘要和时间
         conn.execute(
             "UPDATE threads SET snippet = ?1, last_message_at = ?2 WHERE id = ?3",
             params![text.chars().take(100).collect::<String>(), now, thread_id],
@@ -191,6 +185,29 @@ impl Database {
         Ok(id)
     }
 
+    /// Archive a message (and its thread).
+    /// 归档消息（及其会话）。
+    pub async fn archive_message(&self, message_id: &str) -> Result<()> {
+        let conn = self.conn.lock().await;
+        
+        // Find thread for message / 查找消息所属的会话
+        let thread_id: String = conn.query_row(
+            "SELECT thread_id FROM messages WHERE id = ?1",
+            params![message_id],
+            |row| row.get(0),
+        )?;
+
+        // Mark thread as archived / 标记会话为已归档
+        conn.execute(
+            "UPDATE threads SET is_archived = 1 WHERE id = ?1",
+            params![thread_id],
+        )?;
+
+        Ok(())
+    }
+
+    /// Fetch all threads sorted by latest activity.
+    /// 获取按最新活动排序的所有会话。
     pub async fn get_all_threads(&self) -> Result<Vec<Thread>> {
         let conn = self.conn.lock().await;
         let mut stmt = conn.prepare("SELECT id, subject, snippet, last_message_at, is_read, is_archived, tags FROM threads ORDER BY last_message_at DESC")?;

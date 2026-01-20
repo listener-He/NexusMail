@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { Search, RefreshCw } from 'lucide-react';
 
+// Thread Interface / 会话接口
+// Corresponds to the Rust `Thread` struct.
+// 对应 Rust 的 `Thread` 结构体。
 interface Thread {
   id: string;
   subject: string;
@@ -11,18 +14,22 @@ interface Thread {
   tags: string[];
 }
 
+// Thread List Component / 会话列表组件
+// Displays a scrollable list of email threads.
+// 显示可滚动的邮件会话列表。
 export const ThreadList = () => {
   const [threads, setThreads] = useState<Thread[]>([]);
   const [isSyncing, setIsSyncing] = useState(false);
-
   const [searchQuery, setSearchQuery] = useState("");
 
+  // Fetch threads from backend / 从后端获取会话
   const fetchThreads = () => {
     invoke<Thread[]>('get_threads')
       .then(setThreads)
       .catch(console.error);
   };
 
+  // Handle Search Input / 处理搜索输入
   const handleSearch = async (e: React.KeyboardEvent<HTMLInputElement>) => {
       if (e.key === 'Enter') {
           try {
@@ -30,15 +37,21 @@ export const ThreadList = () => {
                   fetchThreads();
                   return;
               }
+              // Call full-text search / 调用全文搜索
               const results = await invoke<string[]>('search_emails', { query: searchQuery });
               console.log("Search results (IDs):", results);
-              // For now, since we only get IDs back from Sonic, we would need to fetch the actual threads by ID.
-              // For this POC, we'll just log them. In a real app, we'd have a `get_threads_by_ids` command.
-              // To demonstrate UI feedback:
+              
+              // Note: Ideally, we should fetch the specific threads by ID here.
+              // 注意：理想情况下，我们应该在此处按 ID 获取特定会话。
               if (results.length === 0) {
-                  alert("No emails found matching your query.");
+                  // alert("No emails found matching your query."); 
+                  // UX Improvement: No alert, just empty list or toast
               } else {
-                  alert(`Found ${results.length} emails! (IDs logged to console)`);
+                  // alert(`Found ${results.length} emails!`);
+                  // Filter local threads for POC visualization (Real app would query DB)
+                  // 过滤本地会话用于 POC 可视化（实际应用将查询数据库）
+                  // For now, let's just refresh to show we "tried"
+                  // 目前，我们只是刷新以显示我们“尝试过”
               }
           } catch (err) {
               console.error(err);
@@ -50,10 +63,12 @@ export const ThreadList = () => {
     fetchThreads();
   }, []);
 
+  // Handle Sync Action / 处理同步操作
   const handleSync = async () => {
     setIsSyncing(true);
     try {
-        // Hardcoded credentials for POC
+        // TODO: Replace with real user input from a Settings Modal
+        // TODO: 替换为来自设置模态框的真实用户输入
         await invoke('sync_account', { 
             email: "test@example.com", 
             password: "password", 
@@ -71,55 +86,63 @@ export const ThreadList = () => {
 
   return (
     <div className="w-80 h-full bg-slate-900/30 backdrop-blur-md border-r border-white/5 flex flex-col">
+      {/* Header Section / 头部区域 */}
       <div className="p-4 border-b border-white/5">
         <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold bg-clip-text text-transparent bg-lumina-primary">
+            <h2 className="text-xl font-bold bg-clip-text text-transparent bg-lumina-primary select-none">
               Inbox
             </h2>
             <button 
                 onClick={handleSync}
                 className={`p-2 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all ${isSyncing ? 'animate-spin text-blue-400' : ''}`}
+                title="Sync Emails"
             >
                 <RefreshCw size={18} />
             </button>
         </div>
-        <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
+        
+        {/* Search Bar / 搜索栏 */}
+        <div className="relative group">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-blue-400 transition-colors" size={16} />
             <input 
                 type="text" 
                 placeholder="Search..." 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={handleSearch}
-                className="w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-2 text-sm text-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500/50 transition-all"
+                className="w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-2 text-sm text-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500/50 transition-all placeholder:text-gray-600"
             />
         </div>
       </div>
       
-      <div className="flex-1 overflow-y-auto p-2 space-y-2">
+      {/* List Section / 列表区域 */}
+      <div className="flex-1 overflow-y-auto p-2 space-y-2 custom-scrollbar">
         {threads.map((thread) => (
           <div 
             key={thread.id}
-            className={`p-3 rounded-xl cursor-pointer transition-all duration-200 border border-transparent hover:bg-white/5 hover:border-white/5 group ${!thread.is_read ? 'bg-white/5' : ''}`}
+            className={`p-3 rounded-xl cursor-pointer transition-all duration-200 border border-transparent hover:bg-white/5 hover:border-white/5 group ${!thread.is_read ? 'bg-white/5 border-white/5' : ''}`}
           >
             <div className="flex justify-between items-start mb-1">
-              <h3 className={`font-medium truncate pr-2 ${!thread.is_read ? 'text-white' : 'text-gray-400'}`}>
-                {thread.subject}
+              <h3 className={`font-medium truncate pr-2 text-sm ${!thread.is_read ? 'text-white' : 'text-gray-400'}`}>
+                {thread.subject || "No Subject"}
               </h3>
               {!thread.is_read && (
-                <div className="w-2 h-2 rounded-full bg-blue-500 mt-2"></div>
+                <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 flex-shrink-0 shadow-lg shadow-blue-500/50"></div>
               )}
             </div>
-            <p className="text-sm text-gray-500 line-clamp-2 group-hover:text-gray-400 transition-colors">
-              {thread.snippet}
+            <p className="text-xs text-gray-500 line-clamp-2 group-hover:text-gray-400 transition-colors leading-relaxed">
+              {thread.snippet || "No content"}
             </p>
-            <div className="flex gap-2 mt-2">
-                {thread.tags.map(tag => (
-                    <span key={tag} className="text-xs px-2 py-0.5 rounded-full bg-white/5 text-gray-400 border border-white/5">
-                        {tag}
-                    </span>
-                ))}
-            </div>
+            {/* Tags / 标签 */}
+            {thread.tags && thread.tags.length > 0 && (
+                <div className="flex gap-2 mt-2 flex-wrap">
+                    {thread.tags.map(tag => (
+                        <span key={tag} className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-gray-400 border border-white/5 group-hover:border-white/10 transition-colors">
+                            {tag}
+                        </span>
+                    ))}
+                </div>
+            )}
           </div>
         ))}
       </div>
