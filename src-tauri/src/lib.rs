@@ -3,10 +3,22 @@ pub mod engine;
 pub mod security;
 
 use crate::database::Database;
+use crate::engine::Engine;
+use crate::engine::models::Workflow;
 use tauri::{Manager, State};
 use std::sync::Arc;
 use crate::database::models::Thread;
 use chrono::Utc;
+
+#[tauri::command]
+async fn get_workflows(state: State<'_, Arc<Engine>>) -> Result<Vec<Workflow>, String> {
+    Ok(state.get_workflows().await)
+}
+
+#[tauri::command]
+async fn save_workflow(state: State<'_, Arc<Engine>>, yaml: String) -> Result<(), String> {
+    state.load_workflow(&yaml).await.map_err(|e| e.to_string())
+}
 
 // Command to fetch threads (Mock implementation for now)
 #[tauri::command]
@@ -70,11 +82,15 @@ pub fn run() {
           db_clone.init().await.expect("Failed to run migrations");
       });
 
+      // Initialize Engine
+      let engine = Arc::new(Engine::new());
+      
       app.manage(db_arc);
+      app.manage(engine);
 
       Ok(())
     })
-    .invoke_handler(tauri::generate_handler![get_threads])
+    .invoke_handler(tauri::generate_handler![get_threads, get_workflows, save_workflow])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 }

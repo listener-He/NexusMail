@@ -27,4 +27,9 @@ tokio = { version = "1", features = ["full"] }
 rusqlite = { version = "0.31", features = ["bundled-sqlcipher"] }
 chrono = { version = "0.4", features = ["serde"] }
 uuid = { version = "1.0", features = ["v4", "serde"] }
+serde_yaml = "0.9"
+async-imap = "0.9"
+mailparse = "0.15"
+futures = "0.3"
+
 

@@ -1,14 +1,17 @@
 import React from 'react';
-import { Inbox, Send, Archive, Settings, User } from 'lucide-react';
+import { Inbox, Send, Archive, Settings, User, GitFork } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 interface NavItemProps {
   icon: React.ReactNode;
   active?: boolean;
+  onClick?: () => void;
 }
 
-const NavItem = ({ icon, active }: NavItemProps) => (
-  <div className={cn(
+const NavItem = ({ icon, active, onClick }: NavItemProps) => (
+  <div 
+    onClick={onClick}
+    className={cn(
     "p-3 rounded-xl transition-all duration-300 cursor-pointer mb-4",
     active 
       ? "bg-lumina-active text-white shadow-lg shadow-blue-500/30" 
@@ -18,7 +21,12 @@ const NavItem = ({ icon, active }: NavItemProps) => (
   </div>
 );
 
-export const Sidebar = () => {
+interface SidebarProps {
+    currentView: string;
+    onChangeView: (view: string) => void;
+}
+
+export const Sidebar = ({ currentView, onChangeView }: SidebarProps) => {
   return (
     <div className="w-20 h-full bg-slate-900/50 backdrop-blur-xl border-r border-white/5 flex flex-col items-center py-8 z-50">
       <div className="mb-10">
@@ -28,7 +36,16 @@ export const Sidebar = () => {
       </div>
       
       <div className="flex-1 flex flex-col items-center w-full">
-        <NavItem icon={<Inbox size={24} />} active />
+        <NavItem 
+            icon={<Inbox size={24} />} 
+            active={currentView === 'inbox'} 
+            onClick={() => onChangeView('inbox')}
+        />
+        <NavItem 
+            icon={<GitFork size={24} />} 
+            active={currentView === 'workflow'} 
+            onClick={() => onChangeView('workflow')}
+        />
         <NavItem icon={<Send size={24} />} />
         <NavItem icon={<Archive size={24} />} />
       </div>
