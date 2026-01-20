@@ -56,6 +56,19 @@ impl Database {
             [],
         )?;
 
+        // 1.1 Sync Channels Table / 同步渠道表
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS sync_channels (
+                id TEXT PRIMARY KEY,
+                name TEXT NOT NULL,
+                type_ TEXT NOT NULL,
+                config_json TEXT NOT NULL,
+                last_sync_at DATETIME,
+                is_active BOOLEAN DEFAULT 1
+            )",
+            [],
+        )?;
+
         // 2. Identity Hub (Participants) / 身份中心（参与者）
         conn.execute(
             "CREATE TABLE IF NOT EXISTS participants (
@@ -203,6 +216,17 @@ impl Database {
             params![thread_id],
         )?;
 
+        Ok(())
+    }
+
+    /// Change the database encryption key (Rekey).
+    /// 更改数据库加密密钥 (Rekey)。
+    /// This is an expensive operation as it rewrites the entire database.
+    /// 这是一个昂贵的操作，因为它会重写整个数据库。
+    pub async fn change_password(&self, new_key: &str) -> Result<()> {
+        let conn = self.conn.lock().await;
+        // SQLCipher PRAGMA rekey
+        conn.pragma_update(None, "rekey", &new_key)?;
         Ok(())
     }
 

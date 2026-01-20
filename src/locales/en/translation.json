@@ -1,0 +1,24 @@
+{
+  "sidebar": {
+    "inbox": "Inbox",
+    "workflows": "Workflows",
+    "sent": "Sent",
+    "archive": "Archive",
+    "settings": "Settings",
+    "profile": "Profile"
+  },
+  "inbox": {
+    "title": "Inbox",
+    "search": "Search..."
+  },
+  "workflow": {
+    "title": "Automation Workflows",
+    "create": "New Workflow",
+    "save": "Save",
+    "activate": "Activate"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language"
+  }
+}

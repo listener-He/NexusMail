@@ -1,0 +1,24 @@
+{
+  "sidebar": {
+    "inbox": "收件箱",
+    "workflows": "工作流程",
+    "sent": "已發送",
+    "archive": "封存",
+    "settings": "設定",
+    "profile": "個人資料"
+  },
+  "inbox": {
+    "title": "收件箱",
+    "search": "搜尋..."
+  },
+  "workflow": {
+    "title": "自動化工作流程",
+    "create": "新增工作流程",
+    "save": "儲存",
+    "activate": "啟用"
+  },
+  "settings": {
+    "title": "設定",
+    "language": "語言"
+  }
+}

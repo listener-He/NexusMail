@@ -14,6 +14,22 @@ pub struct Account {
     pub provider: String,
     /// Creation timestamp / 创建时间戳
     pub created_at: DateTime<Utc>,
+    /// JSON string containing encrypted credentials (IMAP/SMTP host, port, user, pass)
+    /// 包含加密凭据（IMAP/SMTP 主机、端口、用户、密码）的 JSON 字符串
+    pub credentials_json: Option<String>,
+}
+
+/// 同步渠道模型 (Sync Channel Model)
+/// Represents a remote destination for backup/sync (e.g., S3, WebDAV).
+/// 代表备份/同步的远程目标（例如 S3、WebDAV）。
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SyncChannel {
+    pub id: String,
+    pub name: String,
+    pub type_: String, // "s3", "webdav", "postgres"
+    pub config_json: String, // Encrypted config
+    pub last_sync_at: Option<DateTime<Utc>>,
+    pub is_active: bool,
 }
 
 /// 参与者模型 (Participant Model)

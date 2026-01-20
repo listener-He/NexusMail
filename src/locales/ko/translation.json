@@ -1,0 +1,24 @@
+{
+  "sidebar": {
+    "inbox": "받은편지함",
+    "workflows": "워크플로우",
+    "sent": "보낸편지함",
+    "archive": "보관함",
+    "settings": "설정",
+    "profile": "프로필"
+  },
+  "inbox": {
+    "title": "받은편지함",
+    "search": "검색..."
+  },
+  "workflow": {
+    "title": "자동화 워크플로우",
+    "create": "새 워크플로우",
+    "save": "저장",
+    "activate": "활성화"
+  },
+  "settings": {
+    "title": "설정",
+    "language": "언어"
+  }
+}

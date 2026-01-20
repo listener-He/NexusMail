@@ -1,6 +1,7 @@
 pub mod models;
 pub mod ingestion;
 pub mod search;
+pub mod sync;
 
 use self::models::Workflow;
 use std::sync::Arc;

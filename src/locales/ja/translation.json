@@ -1,0 +1,24 @@
+{
+  "sidebar": {
+    "inbox": "受信トレイ",
+    "workflows": "ワークフロー",
+    "sent": "送信済み",
+    "archive": "アーカイブ",
+    "settings": "設定",
+    "profile": "プロフィール"
+  },
+  "inbox": {
+    "title": "受信トレイ",
+    "search": "検索..."
+  },
+  "workflow": {
+    "title": "自動化ワークフロー",
+    "create": "新規作成",
+    "save": "保存",
+    "activate": "有効化"
+  },
+  "settings": {
+    "title": "設定",
+    "language": "言語"
+  }
+}

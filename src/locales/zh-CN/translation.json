@@ -1,0 +1,24 @@
+{
+  "sidebar": {
+    "inbox": "收件箱",
+    "workflows": "工作流",
+    "sent": "已发送",
+    "archive": "归档",
+    "settings": "设置",
+    "profile": "个人资料"
+  },
+  "inbox": {
+    "title": "收件箱",
+    "search": "搜索..."
+  },
+  "workflow": {
+    "title": "自动化工作流",
+    "create": "新建工作流",
+    "save": "保存",
+    "activate": "激活"
+  },
+  "settings": {
+    "title": "设置",
+    "language": "语言"
+  }
+}

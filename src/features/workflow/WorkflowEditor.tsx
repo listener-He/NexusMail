@@ -23,7 +23,7 @@ const initialEdges = [
     { id: 'e2-3', source: '2', target: '3', animated: true, style: { stroke: '#6EE7B7' } },
 ];
 
-export const WorkflowEditor = () => {
+export const WorkflowEditor = ({ workflowId, onSave }: { workflowId?: string | null, onSave?: () => void }) => {
   const [nodes, , onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
@@ -36,7 +36,7 @@ export const WorkflowEditor = () => {
       // Convert React Flow nodes to Nexus Engine YAML format
       // Simplified: We assume a linear flow Trigger -> Filter -> Action for this POC
       const yaml = `
-id: ${crypto.randomUUID()}
+id: ${workflowId || crypto.randomUUID()}
 name: "Visual Workflow"
 enabled: true
 triggers:
@@ -60,6 +60,7 @@ actions:
               console.warn('Tauri API not available (running in browser?)');
               alert("Workflow saved (simulated)!");
           }
+          if (onSave) onSave();
       } catch (err) {
           console.error(err);
           alert("Failed to save workflow.");
