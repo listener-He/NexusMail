@@ -1,4 +1,5 @@
 pub mod models;
+pub mod ingestion;
 
 use self::models::Workflow;
 use std::sync::Arc;

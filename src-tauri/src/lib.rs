@@ -21,33 +21,18 @@ async fn save_workflow(state: State<'_, Arc<Engine>>, yaml: String) -> Result<()
 }
 
 // Command to fetch threads (Mock implementation for now)
+use crate::engine::ingestion::IngestionService;
+
+#[tauri::command]
+async fn sync_account(state: State<'_, Arc<Database>>, email: String, password: String, server: String) -> Result<(), String> {
+    let ingestion = IngestionService::new(state.inner().clone());
+    ingestion.sync_account(&email, &password, &server).await.map_err(|e| e.to_string())
+}
+
 #[tauri::command]
 async fn get_threads(state: State<'_, Arc<Database>>) -> Result<Vec<Thread>, String> {
-    // In a real scenario, we would query the database here.
-    // let conn = state.conn.lock().await;
-    // ... query logic ...
-    
-    // Returning mock data for UI development
-    Ok(vec![
-        Thread {
-            id: "1".to_string(),
-            subject: Some("Invoice #1023".to_string()),
-            snippet: Some("Please find attached the invoice for last month...".to_string()),
-            last_message_at: Some(Utc::now()),
-            is_read: false,
-            is_archived: false,
-            tags: vec!["finance".to_string()],
-        },
-        Thread {
-            id: "2".to_string(),
-            subject: Some("Project Update: NexusMail".to_string()),
-            snippet: Some("The new design system looks great! Let's proceed...".to_string()),
-            last_message_at: Some(Utc::now()),
-            is_read: true,
-            is_archived: false,
-            tags: vec!["work".to_string()],
-        },
-    ])
+    // Return real data from DB
+    state.get_all_threads().await.map_err(|e| e.to_string())
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -90,7 +75,7 @@ pub fn run() {
 
       Ok(())
     })
-    .invoke_handler(tauri::generate_handler![get_threads, get_workflows, save_workflow])
+    .invoke_handler(tauri::generate_handler![get_threads, get_workflows, save_workflow, sync_account])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 }

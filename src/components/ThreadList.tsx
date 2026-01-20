@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { invoke } from '@tauri-apps/api/core';
-import { Search } from 'lucide-react';
+import { Search, RefreshCw } from 'lucide-react';
 
 interface Thread {
   id: string;
@@ -13,20 +13,51 @@ interface Thread {
 
 export const ThreadList = () => {
   const [threads, setThreads] = useState<Thread[]>([]);
+  const [isSyncing, setIsSyncing] = useState(false);
 
-  useEffect(() => {
-    // Fetch mock data from Rust backend
+  const fetchThreads = () => {
     invoke<Thread[]>('get_threads')
       .then(setThreads)
       .catch(console.error);
+  };
+
+  useEffect(() => {
+    fetchThreads();
   }, []);
+
+  const handleSync = async () => {
+    setIsSyncing(true);
+    try {
+        // Hardcoded credentials for POC
+        await invoke('sync_account', { 
+            email: "test@example.com", 
+            password: "password", 
+            server: "imap.example.com" 
+        });
+        fetchThreads();
+    } catch (error) {
+        console.error("Sync failed (expected in POC without real creds):", error);
+        // Refresh anyway to show if any data changed
+        fetchThreads();
+    } finally {
+        setIsSyncing(false);
+    }
+  };
 
   return (
     <div className="w-80 h-full bg-slate-900/30 backdrop-blur-md border-r border-white/5 flex flex-col">
       <div className="p-4 border-b border-white/5">
-        <h2 className="text-xl font-bold bg-clip-text text-transparent bg-lumina-primary mb-4">
-          Inbox
-        </h2>
+        <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-bold bg-clip-text text-transparent bg-lumina-primary">
+              Inbox
+            </h2>
+            <button 
+                onClick={handleSync}
+                className={`p-2 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all ${isSyncing ? 'animate-spin text-blue-400' : ''}`}
+            >
+                <RefreshCw size={18} />
+            </button>
+        </div>
         <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
             <input 
